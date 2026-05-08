@@ -116,6 +116,16 @@ if hosting and hosting_preis > 0:
 # --- PDF Export ---
 st.divider()
 
+def sanitize(text):
+    """Replace common Unicode chars not supported by Latin-1 / Helvetica."""
+    return (text
+        .replace("\u2014", "-")   # em dash
+        .replace("\u2013", "-")   # en dash
+        .replace("\u2018", "'").replace("\u2019", "'")
+        .replace("\u201c", '"').replace("\u201d", '"')
+        .encode("latin-1", errors="replace").decode("latin-1")
+    )
+
 def erstelle_pdf():
     pdf = FPDF()
     pdf.add_page()
@@ -126,7 +136,7 @@ def erstelle_pdf():
 
     pdf.set_font("Helvetica", size=9)
     pdf.set_text_color(130, 130, 130)
-    pdf.cell(0, 5, "Hannes — Freelance Webdesign", ln=True)
+    pdf.cell(0, 5, "Hannes - Freelance Webdesign", ln=True)
     pdf.cell(0, 5, "Dortmund", ln=True)
     pdf.ln(2)
     pdf.set_xy(20, 20)
@@ -139,8 +149,8 @@ def erstelle_pdf():
 
     pdf.set_font("Helvetica", size=11)
     pdf.set_text_color(80, 80, 80)
-    pdf.cell(0, 6, f"Fuer: {kunde or 'Kunde'}", ln=True)
-    pdf.cell(0, 6, f"Projekt: {projekt or 'Website-Projekt'}", ln=True)
+    pdf.cell(0, 6, sanitize(f"Fuer: {kunde or 'Kunde'}"), ln=True)
+    pdf.cell(0, 6, sanitize(f"Projekt: {projekt or 'Website-Projekt'}"), ln=True)
 
     pdf.ln(3)
     pdf.set_draw_color(220, 220, 220)
@@ -158,13 +168,13 @@ def erstelle_pdf():
     pdf.set_font("Helvetica", size=11)
     pdf.set_text_color(40, 40, 40)
     for label, preis in positionen:
-        pdf.cell(130, 7, label)
+        pdf.cell(130, 7, sanitize(label))
         pdf.cell(0, 7, f"{preis:,.0f} EUR".replace(",", "."), align="R", ln=True)
 
     if rabatt_betrag > 0:
         label_r = f"Rabatt ({rabatt_pct}%)" if rabatt_pct > 0 else "Rabatt"
         pdf.set_text_color(60, 140, 80)
-        pdf.cell(130, 7, label_r)
+        pdf.cell(130, 7, sanitize(label_r))
         pdf.cell(0, 7, f"-{rabatt_betrag:,.0f} EUR".replace(",", "."), align="R", ln=True)
         pdf.set_text_color(40, 40, 40)
 
